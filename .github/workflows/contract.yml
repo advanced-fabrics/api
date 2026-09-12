@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: bufbuild/buf-setup-action@v1
-      - run: buf lint proto
+      - run: buf lint
       - run: python -m json.tool schemas/config-v1.schema.json >/dev/null
       - run: npx --yes @redocly/cli@1.34.5 lint openapi/observation-v1.yaml
       - name: Reject private defaults and credentials
         run: |
-          ! git grep -nE '(networking\.re8ch\.com|registry\.re8ch\.com|CF_API_TOKEN|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' -- .
+          ! git grep -nE '(networking\.re8ch\.com|registry\.re8ch\.com|CF_API_TOKEN|BEGIN (RSA |OPENSSH )?PRIVATE KEY)' -- . ':!.github/workflows/contract.yml'
