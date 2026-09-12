@@ -4,14 +4,17 @@ info:
   version: 1.0.0
   license: {name: Apache-2.0, identifier: Apache-2.0}
 servers: [{url: /api/v1}]
+security: [{kubernetesServiceProxy: []}]
 paths:
   /subjects:
     get:
+      summary: List observable subjects
       operationId: listSubjects
       responses:
         '200': {description: Observable subjects, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Subject'}}}}}
   /subjects/{kind}/{name}/snapshot:
     get:
+      summary: Read a subject snapshot
       operationId: getSubjectSnapshot
       parameters:
         - {name: kind, in: path, required: true, schema: {type: string}}
@@ -21,11 +24,13 @@ paths:
         '404': {description: Subject not found}
   /relationships:
     get:
+      summary: List relationship definitions
       operationId: listRelationships
       responses:
         '200': {description: Relationship definitions, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Relationship'}}}}}
   /relationships/{id}/series:
     get:
+      summary: Read synchronized relationship series
       operationId: getRelationshipSeries
       parameters:
         - {name: id, in: path, required: true, schema: {type: string}}
@@ -37,6 +42,7 @@ paths:
         '200': {description: Deterministically downsampled synchronized slices, content: {application/json: {schema: {$ref: '#/components/schemas/Series'}}}}
   /episodes:
     get:
+      summary: List natural observation episodes
       operationId: listEpisodes
       parameters:
         - {name: subject, in: query, required: true, schema: {type: string}}
@@ -45,6 +51,11 @@ paths:
       responses:
         '200': {description: Natural event cursors, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Episode'}}}}}
 components:
+  securitySchemes:
+    kubernetesServiceProxy:
+      type: http
+      scheme: bearer
+      bearerFormat: Kubernetes service-account or user token
   schemas:
     Subject:
       type: object
