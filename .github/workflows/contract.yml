@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: bufbuild/buf-setup-action@v1
-      - run: buf lint --path proto
+      - run: buf lint
       - run: python -m json.tool schemas/config-v1.schema.json >/dev/null
       - run: npx --yes @redocly/cli@1.34.5 lint openapi/observation-v1.yaml
       - name: Reject private defaults and credentials
