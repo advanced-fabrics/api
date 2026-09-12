@@ -4,7 +4,7 @@ package advfab.provider.v1;
 
 option go_package = "github.com/advanced-fabrics/api/gen/go/provider/v1;providerv1";
 
-service Provider {
+service ProviderService {
   rpc Capabilities(CapabilitiesRequest) returns (CapabilitiesResponse);
   rpc Health(HealthRequest) returns (HealthResponse);
   rpc Observe(ObserveRequest) returns (ObserveResponse);
@@ -15,10 +15,10 @@ service Provider {
 message CapabilitiesRequest {}
 message CapabilitiesResponse { string protocol_version = 1; repeated string capabilities = 2; }
 message HealthRequest {}
-message HealthResponse { enum State { STATE_UNSPECIFIED = 0; READY = 1; DEGRADED = 2; UNAVAILABLE = 3; } State state = 1; string reason = 2; }
+message HealthResponse { enum State { STATE_UNSPECIFIED = 0; STATE_READY = 1; STATE_DEGRADED = 2; STATE_UNAVAILABLE = 3; } State state = 1; string reason = 2; }
 message ObserveRequest { string subject = 1; }
 message ObserveResponse { bytes snapshot_json = 1; }
 message PlanRequest { bytes desired_json = 1; }
 message PlanResponse { string plan_id = 1; bytes diff_json = 2; repeated string required_capabilities = 3; }
 message ApplyRequest { string plan_id = 1; bytes authorization_context_json = 2; }
-message ApplyResponse { string operation_id = 1; enum State { STATE_UNSPECIFIED = 0; ACCEPTED = 1; REJECTED = 2; } State state = 2; string reason = 3; }
+message ApplyResponse { string operation_id = 1; enum State { STATE_UNSPECIFIED = 0; STATE_ACCEPTED = 1; STATE_REJECTED = 2; } State state = 2; string reason = 3; }
