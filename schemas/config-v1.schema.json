@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.advfab.org/schemas/config-v1.schema.json",
+  "title": "Advanced Fabrics configuration",
+  "type": "object",
+  "required": ["apiVersion", "kind", "contexts"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {"const": "config.advfab.org/v1"},
+    "kind": {"const": "Config"},
+    "currentContext": {"type": "string"},
+    "contexts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "cluster"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "cluster": {"type": "string", "minLength": 1},
+          "providers": {"type": "array", "items": {"type": "string"}},
+          "observationAPI": {"type": "string", "format": "uri"},
+          "identityProvider": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

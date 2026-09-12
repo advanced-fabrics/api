@@ -1,0 +1,116 @@
+openapi: 3.1.0
+info:
+  title: Advanced Fabrics Observation API
+  version: 1.0.0
+  license: {name: Apache-2.0, identifier: Apache-2.0}
+servers: [{url: /api/v1}]
+paths:
+  /subjects:
+    get:
+      operationId: listSubjects
+      responses:
+        '200': {description: Observable subjects, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Subject'}}}}}
+  /subjects/{kind}/{name}/snapshot:
+    get:
+      operationId: getSubjectSnapshot
+      parameters:
+        - {name: kind, in: path, required: true, schema: {type: string}}
+        - {name: name, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Current producer snapshot, content: {application/json: {schema: {$ref: '#/components/schemas/Snapshot'}}}}
+        '404': {description: Subject not found}
+  /relationships:
+    get:
+      operationId: listRelationships
+      responses:
+        '200': {description: Relationship definitions, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Relationship'}}}}}
+  /relationships/{id}/series:
+    get:
+      operationId: getRelationshipSeries
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+        - {name: subject, in: query, required: true, schema: {type: string}}
+        - {name: start, in: query, schema: {type: string, format: date-time}}
+        - {name: end, in: query, schema: {type: string, format: date-time}}
+        - {name: maxPoints, in: query, schema: {type: integer, minimum: 1, maximum: 1000, default: 7}}
+      responses:
+        '200': {description: Deterministically downsampled synchronized slices, content: {application/json: {schema: {$ref: '#/components/schemas/Series'}}}}
+  /episodes:
+    get:
+      operationId: listEpisodes
+      parameters:
+        - {name: subject, in: query, required: true, schema: {type: string}}
+        - {name: start, in: query, schema: {type: string, format: date-time}}
+        - {name: end, in: query, schema: {type: string, format: date-time}}
+      responses:
+        '200': {description: Natural event cursors, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Episode'}}}}}
+components:
+  schemas:
+    Subject:
+      type: object
+      required: [kind, name, state]
+      properties:
+        kind: {type: string}
+        name: {type: string}
+        state: {enum: [ready, partial, unavailable]}
+        reason: {type: [string, 'null']}
+    Snapshot:
+      type: object
+      required: [subject, observedAt, evidenceState, measurements]
+      properties:
+        subject: {$ref: '#/components/schemas/Subject'}
+        observedAt: {type: string, format: date-time}
+        evidenceState: {enum: [observed, partial, unavailable]}
+        measurements: {type: object, additionalProperties: true}
+    Vertex:
+      type: object
+      required: [id, label, order]
+      properties:
+        id: {type: string}
+        label: {type: string}
+        order: {type: integer, minimum: 0, maximum: 2}
+        unit: {type: string}
+        scale: {type: string}
+    Relationship:
+      type: object
+      required: [id, vertices]
+      properties:
+        id: {type: string}
+        description: {type: string}
+        vertices: {type: array, minItems: 3, maxItems: 3, items: {$ref: '#/components/schemas/Vertex'}}
+    Coordinate:
+      type: object
+      required: [vertex, value, confidence, evidenceState]
+      properties:
+        vertex: {type: string}
+        value: {type: [number, 'null'], minimum: 0, maximum: 1}
+        rawValue: {type: [number, string, 'null']}
+        unit: {type: [string, 'null']}
+        scale: {type: [string, 'null']}
+        confidence: {type: number, minimum: 0, maximum: 1}
+        evidenceState: {enum: [observed, partial, unavailable]}
+        missingReason: {type: [string, 'null']}
+    TimeSlice:
+      type: object
+      required: [timestamp, coordinates, state]
+      properties:
+        timestamp: {type: string, format: date-time}
+        state: {enum: [complete, partial, unavailable]}
+        coordinates: {type: array, minItems: 3, maxItems: 3, items: {$ref: '#/components/schemas/Coordinate'}}
+    Series:
+      type: object
+      required: [relationshipId, subject, slices]
+      properties:
+        relationshipId: {type: string}
+        subject: {type: string}
+        slices: {type: array, items: {$ref: '#/components/schemas/TimeSlice'}}
+    Episode:
+      type: object
+      required: [id, subject, startedAt, state]
+      properties:
+        id: {type: string}
+        subject: {type: string}
+        startedAt: {type: string, format: date-time}
+        endedAt: {type: [string, 'null'], format: date-time}
+        state: {type: string}
+        evidence: {type: object, additionalProperties: true}
